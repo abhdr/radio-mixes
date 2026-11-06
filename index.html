@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Radyo</title>
+<meta name="theme-color" content="#0f1115">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Radyo">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<style>
+  :root {
+    --bg:#0f1115; --card:#181b22; --card2:#20242d; --text:#f1f3f6; --muted:#8b93a3; --accent:#ff6a3d;
+  }
+  @media (prefers-color-scheme: light) {
+    :root { --bg:#f3f4f7; --card:#fff; --card2:#eceef3; --text:#14161b; --muted:#6a7282; }
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif; }
+  body { min-height:100vh; min-height:100dvh;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) calc(120px + env(safe-area-inset-bottom)) env(safe-area-inset-left); }
+  header { padding:28px 20px 12px; max-width:720px; margin:0 auto; }
+  h1 { margin:0; font-size:32px; letter-spacing:-.5px; }
+  .sub { color:var(--muted); margin-top:4px; font-size:14px; }
+  .chips { display:flex; gap:8px; overflow-x:auto; padding:14px 20px 4px; max-width:720px; margin:0 auto; scrollbar-width:none; }
+  .chips::-webkit-scrollbar { display:none; }
+  .chip { flex:none; border:0; background:var(--card); color:var(--text); padding:8px 14px; border-radius:999px; font-size:14px; cursor:pointer; }
+  .chip.on { background:var(--accent); color:#fff; }
+  ul { list-style:none; margin:0 auto; padding:12px 16px; max-width:720px; display:grid; gap:10px; }
+  li { display:flex; gap:8px; }
+  .lnk { flex:none; width:44px; border:0; border-radius:16px; background:var(--card); color:var(--muted); cursor:pointer; display:grid; place-items:center; }
+  .lnk svg { width:18px; height:18px; fill:currentColor; }
+  .lnk:active { background:var(--card2); }
+  #toast { position:fixed; left:50%; bottom:calc(100px + env(safe-area-inset-bottom)); transform:translateX(-50%); background:var(--card2); color:var(--text); padding:10px 16px; border-radius:999px; font-size:14px; opacity:0; pointer-events:none; transition:opacity .2s; }
+  #toast.show { opacity:1; }
+  li button.st { flex:1; min-width:0; display:flex; align-items:center; gap:14px; text-align:left;
+    background:var(--card); color:var(--text); border:0; border-radius:16px; padding:14px; cursor:pointer; font:inherit; }
+  li button.st:active { background:var(--card2); }
+  .ico { flex:none; width:46px; height:46px; border-radius:12px; background:var(--card2); display:grid; place-items:center; color:var(--accent); }
+  .ico svg { width:22px; height:22px; fill:currentColor; }
+  li.playing .ico { background:var(--accent); color:#fff; }
+  .meta { min-width:0; flex:1; }
+  .name { font-weight:600; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .genre { color:var(--muted); font-size:13px; margin-top:2px; }
+  .eq { display:none; gap:3px; align-items:flex-end; height:18px; }
+  li.playing .eq { display:flex; }
+  .eq i { width:3px; background:var(--accent); border-radius:2px; animation:eq 1s infinite ease-in-out; }
+  .eq i:nth-child(1){height:40%;animation-delay:-.4s} .eq i:nth-child(2){height:90%;animation-delay:-.2s} .eq i:nth-child(3){height:60%}
+  body.paused .eq i { animation-play-state:paused; }
+  @keyframes eq { 0%,100%{transform:scaleY(.3)} 50%{transform:scaleY(1)} }
+  .bar { position:fixed; left:0; right:0; bottom:0; padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+    background:color-mix(in srgb,var(--card) 88%,transparent); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    border-top:1px solid var(--card2); display:none; }
+  .bar.show { display:block; }
+  .bar-in { max-width:720px; margin:0 auto; display:flex; align-items:center; gap:12px; }
+  .bar .meta .name { font-size:15px; }
+  .bar .status { color:var(--muted); font-size:12px; margin-top:2px; }
+  .ctl { flex:none; width:46px; height:46px; border-radius:50%; border:0; background:var(--accent); color:#fff; display:grid; place-items:center; cursor:pointer; }
+  .ctl.sec { background:var(--card2); color:var(--text); width:40px; height:40px; }
+  .ctl svg { width:20px; height:20px; fill:currentColor; }
+  input[type=range] { width:80px; accent-color:var(--accent); }
+  @media (max-width:480px){ input[type=range]{display:none;} }
+</style>
+</head>
+<body>
+<header>
+  <h1>Radyo</h1>
+  <div class="sub" id="count"></div>
+</header>
+<div class="chips" id="chips"></div>
+<ul id="list"></ul>
+
+<div class="bar" id="bar">
+  <div class="bar-in">
+    <button class="ctl sec" id="prev" aria-label="Önceki"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
+    <div class="meta">
+      <div class="name" id="nowName"></div>
+      <div class="status" id="nowStatus"></div>
+    </div>
+    <input type="range" id="vol" min="0" max="1" step="0.01" value="1" aria-label="Ses">
+    <button class="ctl sec" id="next" aria-label="Sonraki"><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
+    <button class="ctl" id="toggle" aria-label="Oynat / Duraklat"></button>
+  </div>
+</div>
+
+<div id="toast"></div>
+<audio id="audio" preload="none" playsinline></audio>
+
+<script>
+// Radyo listesi (radio-mixes.json içeriği gömülü: dosya iCloud'dan file:// ile açılsa da çalışır).
+// Sayfa bir web sunucusundan açılırsa aynı klasördeki radio-mixes.json varsa onu okur.
+const EMBEDDED = [
+  { "name": "Thraki FM 99.8", "url": "https://eco.onestreaming.com/proxy/thrakifm/stream", "genre": "World/Greek" },
+  { "name": "Relaxing Jazz", "url": "https://443-1.autopo.st/171/stream/3/", "genre": "Jazz" },
+  { "name": "Radio Swiss Jazz", "url": "http://stream.srg-ssr.ch/srgssr/rsj/aac/192", "genre": "Jazz" },
+  { "name": "Radio Paradise Rock Mix", "url": "http://stream.radioparadise.com/rock-320", "genre": "Rock" },
+  { "name": "Radio Paradise Mellow Mix", "url": "http://stream.radioparadise.com/mellow-320", "genre": "Chillout/Ambient" },
+  { "name": "Radio Paradise Main Mix", "url": "http://stream.radioparadise.com/aac-320", "genre": "Alternative/Eclectic" },
+  { "name": "KCRW Eclectic 24", "url": "https://streams.kcrw.com/e24_aac", "genre": "Indie/Eclectic" }
+];
+
+const $ = id => document.getElementById(id);
+const audio = $('audio');
+const ICON_PLAY = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+const ICON_PAUSE = '<svg viewBox="0 0 24 24"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>';
+const ICON_RADIO = '<svg viewBox="0 0 24 24"><path d="M3.24 6.15C2.51 6.43 2 7.17 2 8v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H8.3l8.26-3.34-.75-1.85zM7 20c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3m13-8h-2v-2h-2v2H4V8h16z"/></svg>';
+
+let stations = [], filter = 'Hepsi', current = -1, tried = {};
+
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+// Sayfa https ise http yayınları önce https olarak dene (mixed content engeli), olmazsa orijinaline dön.
+function candidates(url){
+  const list = [];
+  if (location.protocol === 'https:' && url.startsWith('http://')) list.push(url.replace('http://','https://'));
+  list.push(url);
+  return list;
+}
+
+function render(){
+  const genres = ['Hepsi', ...new Set(stations.map(s => s.genre))];
+  $('chips').innerHTML = genres.map(g => `<button class="chip ${g===filter?'on':''}" data-g="${esc(g)}">${esc(g)}</button>`).join('');
+  const shown = stations.map((s,i)=>({s,i})).filter(({s}) => filter==='Hepsi' || s.genre===filter);
+  $('count').textContent = `${shown.length} istasyon`;
+  $('list').innerHTML = shown.map(({s,i}) => `
+    <li class="${i===current?'playing':''}">
+      <button class="st" data-i="${i}">
+        <span class="ico">${ICON_RADIO}</span>
+        <span class="meta"><div class="name">${esc(s.name)}</div><div class="genre">${esc(s.genre)}</div></span>
+        <span class="eq"><i></i><i></i><i></i></span>
+      </button>
+      <button class="lnk" data-i="${i}" aria-label="Kısayol adresini kopyala" title="Kısayol adresini kopyala"><svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7a5 5 0 0 0 0 10h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1M8 13h8v-2H8zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4a5 5 0 0 0 0-10"/></svg></button>
+    </li>`).join('');
+}
+
+function setStatus(t){ $('nowStatus').textContent = t; }
+function syncToggle(){ $('toggle').innerHTML = audio.paused ? ICON_PLAY : ICON_PAUSE; document.body.classList.toggle('paused', audio.paused); }
+
+function play(i){
+  if (i < 0 || i >= stations.length) return;
+  current = i;
+  const s = stations[i];
+  const urls = candidates(s.url);
+  tried = { urls, n: 0, id: i };
+  $('bar').classList.add('show');
+  $('nowName').textContent = s.name;
+  setStatus('Bağlanıyor…');
+  audio.src = urls[0];
+  audio.play().catch(() => setStatus('Başlatmak için ▶ düğmesine dokun'));
+  try { localStorage.setItem('lastStation', s.name); } catch(e){}
+  updateMediaSession(s);
+  render();
+}
+
+audio.addEventListener('error', () => {
+  if (tried.id !== current) return;
+  tried.n++;
+  if (tried.urls && tried.n < tried.urls.length) {
+    audio.src = tried.urls[tried.n]; audio.play().catch(()=>{});
+  } else {
+    setStatus('Yayın açılamadı');
+  }
+});
+audio.addEventListener('playing', () => { setStatus('Canlı'); syncToggle(); });
+audio.addEventListener('waiting', () => setStatus('Tamponlanıyor…'));
+audio.addEventListener('pause', () => { setStatus('Duraklatıldı'); syncToggle(); });
+audio.addEventListener('play', syncToggle);
+
+function toggle(){
+  if (current < 0) return play(0);
+  if (audio.paused) {
+    // Canlı yayında duraklatma sonrası güncel akışa dönmek için yeniden bağla
+    play(current);
+  } else {
+    audio.pause();
+  }
+}
+function step(d){ if (!stations.length) return; play((current + d + stations.length) % stations.length); }
+
+function updateMediaSession(s){
+  if (!('mediaSession' in navigator)) return;
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: s.name, artist: s.genre, album: 'Radyo',
+    artwork: [{ src:'icon-192.png', sizes:'192x192', type:'image/png' }, { src:'icon-512.png', sizes:'512x512', type:'image/png' }]
+  });
+  navigator.mediaSession.setActionHandler('play', toggle);
+  navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+  navigator.mediaSession.setActionHandler('previoustrack', () => step(-1));
+  navigator.mediaSession.setActionHandler('nexttrack', () => step(1));
+}
+
+function toast(t){
+  const el = $('toast'); el.textContent = t; el.classList.add('show');
+  clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('show'), 2200);
+}
+function stationLink(i){
+  return location.origin + location.pathname + '?station=' + encodeURIComponent(stations[i].name);
+}
+async function copyLink(i){
+  const url = stationLink(i);
+  try { await navigator.clipboard.writeText(url); toast('Kısayol adresi kopyalandı'); }
+  catch(e){ window.prompt('Kısayol adresi:', url); }
+}
+
+$('list').addEventListener('click', e => {
+  const l = e.target.closest('button.lnk');
+  if (l) return copyLink(+l.dataset.i);
+  const b = e.target.closest('button.st'); if (!b) return;
+  const i = +b.dataset.i;
+  if (i === current) toggle(); else play(i);
+});
+$('chips').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  filter = b.dataset.g; render();
+});
+$('toggle').addEventListener('click', toggle);
+$('prev').addEventListener('click', () => step(-1));
+$('next').addEventListener('click', () => step(1));
+$('vol').addEventListener('input', e => audio.volume = e.target.value);
+
+async function load(){
+  stations = EMBEDDED;
+  // Sunucudan açıldıysa radio-mixes.json güncel listeyi getirir
+  if (location.protocol.startsWith('http')) {
+    try {
+      const r = await fetch('radio-mixes.json', { cache:'no-cache' });
+      if (r.ok) { const j = await r.json(); if (Array.isArray(j) && j.length) stations = j; }
+    } catch(e){}
+  }
+  syncToggle();
+  render();
+  initialStation();
+}
+
+// Açılışta: ?station=ad veya ?station=2 (sıra no) varsa onu başlat; yoksa son çalınanı hazır tut.
+function findStation(q){
+  if (!q) return -1;
+  const n = q.trim().toLowerCase();
+  if (/^\d+$/.test(n) && +n >= 1 && +n <= stations.length) return +n - 1;
+  let i = stations.findIndex(s => s.name.toLowerCase() === n);
+  if (i < 0) i = stations.findIndex(s => s.name.toLowerCase().includes(n));
+  return i;
+}
+function initialStation(){
+  const q = new URLSearchParams(location.search).get('station');
+  let i = findStation(q);
+  if (i >= 0) return play(i);
+  let last = null;
+  try { last = localStorage.getItem('lastStation'); } catch(e){}
+  i = findStation(last);
+  if (i >= 0) {
+    current = i;
+    $('bar').classList.add('show');
+    $('nowName').textContent = stations[i].name;
+    setStatus('Devam etmek için ▶ dokun');
+    render();
+  }
+}
+load();
+
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>

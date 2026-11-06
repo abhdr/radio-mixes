@@ -1,0 +1,37 @@
+[
+  {
+    "name": "Thraki FM 99.8",
+    "url": "https://eco.onestreaming.com/proxy/thrakifm/stream",
+    "genre": "World/Greek"
+  },
+  {
+    "name": "Relaxing Jazz",
+    "url": "https://443-1.autopo.st/171/stream/3/",
+    "genre": "Jazz"
+  },
+  {
+    "name": "Radio Swiss Jazz",
+    "url": "http://stream.srg-ssr.ch/srgssr/rsj/aac/192",
+    "genre": "Jazz"
+  },
+  {
+    "name": "Radio Paradise Rock Mix",
+    "url": "http://stream.radioparadise.com/rock-320",
+    "genre": "Rock"
+  },
+  {
+    "name": "Radio Paradise Mellow Mix",
+    "url": "http://stream.radioparadise.com/mellow-320",
+    "genre": "Chillout/Ambient"
+  },
+  {
+    "name": "Radio Paradise Main Mix",
+    "url": "http://stream.radioparadise.com/aac-320",
+    "genre": "Alternative/Eclectic"
+  },
+  {
+    "name": "KCRW Eclectic 24",
+    "url": "https://streams.kcrw.com/e24_aac",
+    "genre": "Indie/Eclectic"
+  }
+]
