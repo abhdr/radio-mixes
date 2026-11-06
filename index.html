@@ -1,90 +1,159 @@
 <!doctype html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Radyo</title>
-<meta name="theme-color" content="#0f1115">
+<title>Radio</title>
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Radyo">
+<meta name="apple-mobile-web-app-title" content="Radio">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
 <style>
   :root {
-    --bg:#0f1115; --card:#181b22; --card2:#20242d; --text:#f1f3f6; --muted:#8b93a3; --accent:#ff6a3d;
-  }
-  @media (prefers-color-scheme: light) {
-    :root { --bg:#f3f4f7; --card:#fff; --card2:#eceef3; --text:#14161b; --muted:#6a7282; }
+    color-scheme: dark;
+    --bg:#000; --card:#0f0f12; --card2:#17171c; --line:#1e1e24; --text:#f5f5f7; --muted:#8e8e99;
+    --accent:#ff6a3d; --grad:linear-gradient(135deg,#ff7a45,#ff3d77);
   }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html,body { margin:0; background:var(--bg); color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif; }
-  body { min-height:100vh; min-height:100dvh;
+  html { background:#000; }
+  body { margin:0; background:#000; color:var(--text); min-height:100vh; min-height:100dvh;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
     padding:env(safe-area-inset-top) env(safe-area-inset-right) calc(120px + env(safe-area-inset-bottom)) env(safe-area-inset-left); }
-  header { padding:28px 20px 12px; max-width:720px; margin:0 auto; }
-  h1 { margin:0; font-size:32px; letter-spacing:-.5px; }
+  body.sheet-open { overflow:hidden; }
+  body::before { content:""; position:fixed; inset:0 0 auto 0; height:360px; pointer-events:none; z-index:0;
+    background:radial-gradient(60% 100% at 50% 0%, rgba(255,90,70,.22), rgba(255,90,70,0) 70%); }
+  header, .chips, ul { position:relative; z-index:1; }
+
+  header { padding:34px 22px 6px; max-width:720px; margin:0 auto; }
+  h1 { margin:0; font-size:40px; font-weight:800; letter-spacing:-1.2px; }
+  h1 span { background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; }
   .sub { color:var(--muted); margin-top:4px; font-size:14px; }
-  .chips { display:flex; gap:8px; overflow-x:auto; padding:14px 20px 4px; max-width:720px; margin:0 auto; scrollbar-width:none; }
+
+  .chips { display:flex; gap:8px; overflow-x:auto; padding:16px 22px 6px; max-width:720px; margin:0 auto; scrollbar-width:none; }
   .chips::-webkit-scrollbar { display:none; }
-  .chip { flex:none; border:0; background:var(--card); color:var(--text); padding:8px 14px; border-radius:999px; font-size:14px; cursor:pointer; }
-  .chip.on { background:var(--accent); color:#fff; }
-  ul { list-style:none; margin:0 auto; padding:12px 16px; max-width:720px; display:grid; gap:10px; }
+  .chip { flex:none; border:1px solid var(--line); background:transparent; color:var(--muted); padding:8px 15px; border-radius:999px; font-size:14px; font-weight:500; cursor:pointer; }
+  .chip.on { background:var(--grad); border-color:transparent; color:#fff; }
+
+  ul { list-style:none; margin:0 auto; padding:14px 16px; max-width:720px; display:grid; gap:10px; }
   li { display:flex; gap:8px; }
-  .lnk { flex:none; width:44px; border:0; border-radius:16px; background:var(--card); color:var(--muted); cursor:pointer; display:grid; place-items:center; }
+  li button.st { flex:1; min-width:0; display:flex; align-items:center; gap:14px; text-align:left;
+    background:var(--card); color:var(--text); border:1px solid var(--line); border-radius:20px; padding:12px; cursor:pointer; font:inherit;
+    transition:transform .12s, background .12s, border-color .2s; }
+  li button.st:active { transform:scale(.985); background:var(--card2); }
+  li.playing button.st { border-color:hsla(var(--h),85%,60%,.55); background:linear-gradient(180deg,hsla(var(--h),80%,50%,.10),var(--card)); box-shadow:0 0 28px -10px hsla(var(--h),90%,55%,.7); }
+  .ico { flex:none; width:50px; height:50px; border-radius:15px; display:grid; place-items:center;
+    background:hsl(var(--h),40%,15%); color:hsl(var(--h),85%,66%); }
+  .ico svg { width:23px; height:23px; fill:currentColor; }
+  li.playing .ico { background:linear-gradient(135deg,hsl(var(--h),85%,58%),hsl(calc(var(--h) + 40),85%,52%)); color:#fff; }
+  .meta { min-width:0; flex:1; }
+  .name { font-weight:600; font-size:16px; letter-spacing:-.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .genre { color:var(--muted); font-size:13px; margin-top:2px; }
+  .lnk { flex:none; width:44px; border:1px solid var(--line); border-radius:20px; background:var(--card); color:var(--muted); cursor:pointer; display:grid; place-items:center; }
   .lnk svg { width:18px; height:18px; fill:currentColor; }
   .lnk:active { background:var(--card2); }
-  #toast { position:fixed; left:50%; bottom:calc(100px + env(safe-area-inset-bottom)); transform:translateX(-50%); background:var(--card2); color:var(--text); padding:10px 16px; border-radius:999px; font-size:14px; opacity:0; pointer-events:none; transition:opacity .2s; }
-  #toast.show { opacity:1; }
-  li button.st { flex:1; min-width:0; display:flex; align-items:center; gap:14px; text-align:left;
-    background:var(--card); color:var(--text); border:0; border-radius:16px; padding:14px; cursor:pointer; font:inherit; }
-  li button.st:active { background:var(--card2); }
-  .ico { flex:none; width:46px; height:46px; border-radius:12px; background:var(--card2); display:grid; place-items:center; color:var(--accent); }
-  .ico svg { width:22px; height:22px; fill:currentColor; }
-  li.playing .ico { background:var(--accent); color:#fff; }
-  .meta { min-width:0; flex:1; }
-  .name { font-weight:600; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .genre { color:var(--muted); font-size:13px; margin-top:2px; }
+
   .eq { display:none; gap:3px; align-items:flex-end; height:18px; }
   li.playing .eq { display:flex; }
-  .eq i { width:3px; background:var(--accent); border-radius:2px; animation:eq 1s infinite ease-in-out; }
+  .eq i { width:3px; background:hsl(var(--h),90%,62%); border-radius:2px; animation:eq 1s infinite ease-in-out; }
   .eq i:nth-child(1){height:40%;animation-delay:-.4s} .eq i:nth-child(2){height:90%;animation-delay:-.2s} .eq i:nth-child(3){height:60%}
   body.paused .eq i { animation-play-state:paused; }
   @keyframes eq { 0%,100%{transform:scaleY(.3)} 50%{transform:scaleY(1)} }
-  .bar { position:fixed; left:0; right:0; bottom:0; padding:12px 16px calc(12px + env(safe-area-inset-bottom));
-    background:color-mix(in srgb,var(--card) 88%,transparent); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
-    border-top:1px solid var(--card2); display:none; }
-  .bar.show { display:block; }
-  .bar-in { max-width:720px; margin:0 auto; display:flex; align-items:center; gap:12px; }
-  .bar .meta .name { font-size:15px; }
-  .bar .status { color:var(--muted); font-size:12px; margin-top:2px; }
-  .ctl { flex:none; width:46px; height:46px; border-radius:50%; border:0; background:var(--accent); color:#fff; display:grid; place-items:center; cursor:pointer; }
-  .ctl.sec { background:var(--card2); color:var(--text); width:40px; height:40px; }
-  .ctl svg { width:20px; height:20px; fill:currentColor; }
-  input[type=range] { width:80px; accent-color:var(--accent); }
-  @media (max-width:480px){ input[type=range]{display:none;} }
+
+  .art { position:relative; flex:none; border-radius:12px; background:var(--card2); color:var(--accent); display:grid; place-items:center; overflow:hidden; }
+  .art svg { width:45%; height:45%; fill:currentColor; }
+  .art img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none; }
+  .art.has img { display:block; }
+
+  /* Mini player */
+  .mini { position:fixed; left:10px; right:10px; bottom:calc(10px + env(safe-area-inset-bottom)); z-index:5; display:none;
+    max-width:700px; margin:0 auto; align-items:center; gap:8px; padding:8px 10px 8px 8px;
+    background:rgba(28,28,34,.72); backdrop-filter:blur(24px) saturate(1.4); -webkit-backdrop-filter:blur(24px) saturate(1.4);
+    border:1px solid rgba(255,255,255,.08); border-radius:24px; box-shadow:0 12px 40px rgba(0,0,0,.6); }
+  .mini.show { display:flex; }
+  .mini-open { flex:1; min-width:0; display:flex; align-items:center; gap:12px; background:none; border:0; padding:0; color:inherit; font:inherit; text-align:left; cursor:pointer; }
+  .mini .art { width:52px; height:52px; border-radius:14px; }
+  .mini .name { font-size:15px; }
+  .t2 { color:var(--text); opacity:.75; font-size:13px; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .t3 { color:var(--muted); font-size:12px; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ctl { flex:none; width:46px; height:46px; border-radius:50%; border:0; background:var(--grad); color:#fff; display:grid; place-items:center; cursor:pointer; }
+  .ctl.sec { background:transparent; color:var(--text); width:38px; height:38px; }
+  .ctl:active { transform:scale(.94); }
+  .ctl svg { width:22px; height:22px; fill:currentColor; }
+
+  /* Full-screen player */
+  .sheet { position:fixed; inset:0; z-index:10; background:#000; transform:translateY(100%); transition:transform .32s cubic-bezier(.2,.8,.2,1); visibility:hidden; overflow:hidden; }
+  .sheet.open { transform:none; visibility:visible; }
+  .sheet-bg { position:absolute; inset:-60px; background-size:cover; background-position:center; filter:blur(60px) saturate(1.5); opacity:.55; transform:scale(1.2); transition:background-image .4s; }
+  .sheet::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.85)); }
+  .close { position:absolute; z-index:2; top:calc(14px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%); width:56px; height:32px; border:0; border-radius:16px; background:rgba(255,255,255,.12); color:#fff; display:grid; place-items:center; cursor:pointer; }
+  .close svg { width:22px; height:22px; fill:currentColor; }
+  .sheet-body { position:relative; z-index:1; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+    padding:calc(60px + env(safe-area-inset-top)) 28px calc(28px + env(safe-area-inset-bottom)); max-width:520px; margin:0 auto; text-align:center; }
+  .art.big { width:min(78vw,52vh,380px); height:min(78vw,52vh,380px); border-radius:22px; box-shadow:0 24px 70px rgba(0,0,0,.7); margin-bottom:22px; }
+  .art.big svg { width:30%; height:30%; }
+  .s-title { font-size:24px; font-weight:700; letter-spacing:-.4px; max-width:100%; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+  .s-sub { font-size:16px; color:rgba(255,255,255,.75); max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .s-status { font-size:13px; color:var(--muted); margin-top:2px; }
+  .s-ctl { display:flex; align-items:center; justify-content:center; gap:28px; margin-top:24px; }
+  .s-ctl .ctl { width:74px; height:74px; box-shadow:0 10px 30px -6px rgba(255,80,100,.6); }
+  .s-ctl .ctl svg { width:32px; height:32px; }
+  .s-ctl .ctl.sec { width:52px; height:52px; box-shadow:none; }
+  .s-ctl .ctl.sec svg { width:28px; height:28px; }
+  .vol { width:min(260px,70%); margin-top:26px; accent-color:var(--accent); }
+
+  #toast { position:fixed; left:50%; bottom:calc(100px + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:20; background:#26262d; color:var(--text); padding:10px 16px; border-radius:999px; font-size:14px; opacity:0; pointer-events:none; transition:opacity .2s; }
+  #toast.show { opacity:1; }
+  @media (max-width:380px){ .mini .ctl.sec#prev { display:none; } }
 </style>
 </head>
 <body>
 <header>
-  <h1>Radyo</h1>
+  <h1><span>Radio</span></h1>
   <div class="sub" id="count"></div>
 </header>
 <div class="chips" id="chips"></div>
 <ul id="list"></ul>
 
-<div class="bar" id="bar">
-  <div class="bar-in">
-    <button class="ctl sec" id="prev" aria-label="Önceki"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
-    <div class="meta">
-      <div class="name" id="nowName"></div>
-      <div class="status" id="nowStatus"></div>
+<div class="mini" id="bar">
+  <button class="mini-open" id="openSheet" aria-label="Open player">
+    <div class="art" id="art">
+      <svg viewBox="0 0 24 24"><path d="M3.24 6.15C2.51 6.43 2 7.17 2 8v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H8.3l8.26-3.34-.75-1.85zM7 20c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3m13-8h-2v-2h-2v2H4V8h16z"/></svg>
+      <img id="artImg" alt="">
     </div>
-    <input type="range" id="vol" min="0" max="1" step="0.01" value="1" aria-label="Ses">
-    <button class="ctl sec" id="next" aria-label="Sonraki"><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
-    <button class="ctl" id="toggle" aria-label="Oynat / Duraklat"></button>
+    <div class="meta">
+      <div class="name" id="nowTitle"></div>
+      <div class="t2" id="nowSub"></div>
+      <div class="t3" id="nowStatus"></div>
+    </div>
+  </button>
+  <button class="ctl sec" id="prev" aria-label="Previous station"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
+  <button class="ctl" id="toggle" aria-label="Play / Pause"></button>
+  <button class="ctl sec" id="next" aria-label="Next station"><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
+</div>
+
+<div class="sheet" id="sheet" aria-hidden="true">
+  <div class="sheet-bg" id="sheetBg"></div>
+  <button class="close" id="closeSheet" aria-label="Close player"><svg viewBox="0 0 24 24"><path d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg></button>
+  <div class="sheet-body">
+    <div class="art big" id="sArt">
+      <svg viewBox="0 0 24 24"><path d="M3.24 6.15C2.51 6.43 2 7.17 2 8v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H8.3l8.26-3.34-.75-1.85zM7 20c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3m13-8h-2v-2h-2v2H4V8h16z"/></svg>
+      <img id="sArtImg" alt="">
+    </div>
+    <div class="s-title" id="sTitle"></div>
+    <div class="s-sub" id="sSub"></div>
+    <div class="s-status" id="sStatus"></div>
+    <div class="s-ctl">
+      <button class="ctl sec" id="sPrev" aria-label="Previous station"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
+      <button class="ctl" id="sToggle" aria-label="Play / Pause"></button>
+      <button class="ctl sec" id="sNext" aria-label="Next station"><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
+    </div>
+    <input type="range" class="vol" id="vol" min="0" max="1" step="0.01" value="1" aria-label="Volume">
   </div>
 </div>
 
@@ -92,8 +161,8 @@
 <audio id="audio" preload="none" playsinline></audio>
 
 <script>
-// Radyo listesi (radio-mixes.json içeriği gömülü: dosya iCloud'dan file:// ile açılsa da çalışır).
-// Sayfa bir web sunucusundan açılırsa aynı klasördeki radio-mixes.json varsa onu okur.
+// Station list (radio-mixes.json content embedded so the page also works when opened as a local file).
+// When served over http(s), radio-mixes.json next to this page is loaded instead.
 const EMBEDDED = [
   { "name": "Thraki FM 99.8", "url": "https://eco.onestreaming.com/proxy/thrakifm/stream", "genre": "World/Greek" },
   { "name": "Relaxing Jazz", "url": "https://443-1.autopo.st/171/stream/3/", "genre": "Jazz" },
@@ -104,17 +173,23 @@ const EMBEDDED = [
   { "name": "KCRW Eclectic 24", "url": "https://streams.kcrw.com/e24_aac", "genre": "Indie/Eclectic" }
 ];
 
+// Address of your Cloudflare Worker (reads track info from streams), e.g. 'https://radio-meta.yourname.workers.dev'
+// Leave empty to disable.
+const META_API = 'https://stream-meta.abhdr.workers.dev';
+
+const ALL = 'All';
 const $ = id => document.getElementById(id);
 const audio = $('audio');
 const ICON_PLAY = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
 const ICON_PAUSE = '<svg viewBox="0 0 24 24"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>';
 const ICON_RADIO = '<svg viewBox="0 0 24 24"><path d="M3.24 6.15C2.51 6.43 2 7.17 2 8v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H8.3l8.26-3.34-.75-1.85zM7 20c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3m13-8h-2v-2h-2v2H4V8h16z"/></svg>';
 
-let stations = [], filter = 'Hepsi', current = -1, tried = {};
+let stations = [], filter = ALL, current = -1, tried = {}, status = '', nowMeta = null;
 
 function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function hue(g){ let h = 0; for (const c of String(g)) h = (h * 31 + c.charCodeAt(0)) % 360; return h; }
 
-// Sayfa https ise http yayınları önce https olarak dene (mixed content engeli), olmazsa orijinaline dön.
+// If the page is https, try the https variant of http streams first (mixed-content blocking), then fall back to the original.
 function candidates(url){
   const list = [];
   if (location.protocol === 'https:' && url.startsWith('http://')) list.push(url.replace('http://','https://'));
@@ -123,24 +198,163 @@ function candidates(url){
 }
 
 function render(){
-  const genres = ['Hepsi', ...new Set(stations.map(s => s.genre))];
+  const genres = [ALL, ...new Set(stations.map(s => s.genre))];
   $('chips').innerHTML = genres.map(g => `<button class="chip ${g===filter?'on':''}" data-g="${esc(g)}">${esc(g)}</button>`).join('');
-  const shown = stations.map((s,i)=>({s,i})).filter(({s}) => filter==='Hepsi' || s.genre===filter);
-  $('count').textContent = `${shown.length} istasyon`;
+  const shown = stations.map((s,i)=>({s,i})).filter(({s}) => filter===ALL || s.genre===filter);
+  $('count').textContent = `${shown.length} ${shown.length === 1 ? 'station' : 'stations'}`;
   $('list').innerHTML = shown.map(({s,i}) => `
-    <li class="${i===current?'playing':''}">
+    <li class="${i===current?'playing':''}" style="--h:${hue(s.genre)}">
       <button class="st" data-i="${i}">
         <span class="ico">${ICON_RADIO}</span>
         <span class="meta"><div class="name">${esc(s.name)}</div><div class="genre">${esc(s.genre)}</div></span>
         <span class="eq"><i></i><i></i><i></i></span>
       </button>
-      <button class="lnk" data-i="${i}" aria-label="Kısayol adresini kopyala" title="Kısayol adresini kopyala"><svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7a5 5 0 0 0 0 10h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1M8 13h8v-2H8zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4a5 5 0 0 0 0-10"/></svg></button>
+      <button class="lnk" data-i="${i}" aria-label="Copy shortcut link" title="Copy shortcut link"><svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7a5 5 0 0 0 0 10h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1M8 13h8v-2H8zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4a5 5 0 0 0 0-10"/></svg></button>
     </li>`).join('');
 }
 
-function setStatus(t){ $('nowStatus').textContent = t; }
-function syncToggle(){ $('toggle').innerHTML = audio.paused ? ICON_PLAY : ICON_PAUSE; document.body.classList.toggle('paused', audio.paused); }
+/* ---------- Now playing UI ---------- */
+function setArt(boxId, imgId, url){
+  const box = $(boxId), img = $(imgId);
+  if (url) {
+    if (img.dataset.src !== url) {
+      img.dataset.src = url;
+      box.classList.remove('has');
+      img.onload = () => box.classList.add('has');
+      img.onerror = () => box.classList.remove('has');
+      img.src = url;
+    }
+  } else {
+    img.dataset.src = ''; img.removeAttribute('src'); box.classList.remove('has');
+  }
+}
+function renderNow(){
+  const s = stations[current];
+  if (!s) return;
+  const m = nowMeta;
+  const title = m ? m.title : s.name;
+  const sub = m ? [m.artist, m.album].filter(Boolean).join(' · ') : s.genre;
+  const st = m ? `${s.name} · ${status}` : status;
+  $('nowTitle').textContent = title; $('sTitle').textContent = title;
+  $('nowSub').textContent = sub;     $('sSub').textContent = sub;
+  $('nowStatus').textContent = st;   $('sStatus').textContent = st;
+  const url = (m && m.art) ? m.art : '';
+  setArt('art', 'artImg', url);
+  setArt('sArt', 'sArtImg', url);
+  $('sheetBg').style.backgroundImage = url ? `url("${url.replace(/"/g, '%22')}")` : 'none';
+}
+function setStatus(t){ status = t; renderNow(); }
+function syncToggle(){
+  const icon = audio.paused ? ICON_PLAY : ICON_PAUSE;
+  $('toggle').innerHTML = icon; $('sToggle').innerHTML = icon;
+  document.body.classList.toggle('paused', audio.paused);
+}
 
+function openSheet(){ if (current < 0) return; $('sheet').classList.add('open'); $('sheet').setAttribute('aria-hidden','false'); document.body.classList.add('sheet-open'); }
+function closeSheet(){ $('sheet').classList.remove('open'); $('sheet').setAttribute('aria-hidden','true'); document.body.classList.remove('sheet-open'); }
+
+/* ---------- Metadata (track title, artist, album art) ---------- */
+// Works only for stations with a known public "now playing" API.
+// Others just show station name and genre. Everything fails silently.
+async function getJSON(url){
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), 8000);
+  try {
+    const r = await fetch(url, { cache:'no-store', signal: ctl.signal });
+    if (!r.ok) throw new Error(r.status);
+    return await r.json();
+  } finally { clearTimeout(t); }
+}
+function clean(v){ return (v == null ? '' : String(v)).trim(); }
+function isBreak(m){ return /^\[?\s*break\s*\]?$/i.test(m.title) || /^\[?\s*break\s*\]?$/i.test(m.artist); }
+
+// Generic provider: asks the Cloudflare Worker to read the stream's own track info (ICY metadata)
+function icyProvider(s){
+  return async () => {
+    const d = await getJSON(`${META_API}?url=${encodeURIComponent(s.url)}`);
+    const title = clean(d.title), artist = clean(d.artist);
+    if (!title || title.toLowerCase() === s.name.toLowerCase()) return null;
+    return { title, artist, album: '', art: '' };
+  };
+}
+function providerFor(s){
+  const sp = specificProvider(s);
+  const icy = META_API ? icyProvider(s) : null;
+  if (!sp && !icy) return null;
+  return async () => {
+    if (sp) { try { const m = await sp(); if (m) return m; } catch(e){} }
+    return icy ? await icy() : null;
+  };
+}
+function specificProvider(s){
+  const u = s.url;
+  if (u.includes('radioparadise.com')) {
+    const chan = /mellow/i.test(u) ? 1 : /rock/i.test(u) ? 2 : 0;
+    return async () => {
+      const d = await getJSON(`https://api.radioparadise.com/api/now_playing?chan=${chan}`);
+      const title = clean(d.title), artist = clean(d.artist);
+      if (!title) return null;
+      let art = clean(d.cover || d.cover_art || d.coverart);
+      if (art && !/^https?:/i.test(art)) art = 'https://img.radioparadise.com/' + art.replace(/^\/+/, '');
+      return { title, artist, album: clean(d.album), art: art.replace(/^http:/, 'https:') };
+    };
+  }
+  if (u.includes('kcrw.com')) {
+    return async () => {
+      let d = await getJSON('https://tracklist-api.kcrw.com/Eclectic24/all?page_size=1');
+      if (Array.isArray(d)) d = d[0]; else if (d && Array.isArray(d.items)) d = d.items[0];
+      if (!d) return null;
+      const m = { title: clean(d.title), artist: clean(d.artist), album: clean(d.album),
+                  art: clean(d.albumImageLarge || d.albumImage || d.image).replace(/^http:/, 'https:') };
+      return (m.title && !isBreak(m)) ? m : null;
+    };
+  }
+  return null;
+}
+
+// Album art fallback from the public iTunes Search API
+const artCache = new Map();
+async function itunesArt(m){
+  const key = `${m.artist}|${m.title}`;
+  if (artCache.has(key)) return artCache.get(key);
+  let art = '';
+  try {
+    const d = await getJSON(`https://itunes.apple.com/search?term=${encodeURIComponent([m.artist, m.title].filter(Boolean).join(' '))}&entity=song&limit=1`);
+    const r = d.results && d.results[0];
+    if (r && r.artworkUrl100) art = r.artworkUrl100.replace('100x100', '600x600');
+  } catch(e){}
+  artCache.set(key, art);
+  return art;
+}
+
+let metaTimer = null, metaToken = 0;
+function stopMeta(){ clearInterval(metaTimer); metaTimer = null; metaToken++; }
+function startMeta(i){
+  stopMeta();
+  const token = metaToken, prov = providerFor(stations[i]);
+  nowMeta = null;
+  if (!prov) return;
+  const tick = async () => {
+    if (token !== metaToken) return;
+    try {
+      const m = await prov();
+      if (token !== metaToken) return;
+      if (m && !m.art) { m.art = await itunesArt(m); if (token !== metaToken) return; }
+      applyMeta(m);
+    } catch(e){}
+  };
+  tick();
+  metaTimer = setInterval(() => { if (!audio.paused) tick(); }, 15000);
+}
+function applyMeta(m){
+  const same = (!m && !nowMeta) || (m && nowMeta && m.title === nowMeta.title && m.artist === nowMeta.artist && m.art === nowMeta.art);
+  nowMeta = m || null;
+  if (same) return;
+  renderNow();
+  updateMediaSession();
+}
+
+/* ---------- Playback ---------- */
 function play(i){
   if (i < 0 || i >= stations.length) return;
   current = i;
@@ -148,12 +362,13 @@ function play(i){
   const urls = candidates(s.url);
   tried = { urls, n: 0, id: i };
   $('bar').classList.add('show');
-  $('nowName').textContent = s.name;
-  setStatus('Bağlanıyor…');
+  nowMeta = null;
+  setStatus('Connecting…');
   audio.src = urls[0];
-  audio.play().catch(() => setStatus('Başlatmak için ▶ düğmesine dokun'));
+  audio.play().catch(() => setStatus('Tap ▶ to start'));
   try { localStorage.setItem('lastStation', s.name); } catch(e){}
-  updateMediaSession(s);
+  updateMediaSession();
+  startMeta(i);
   render();
 }
 
@@ -163,18 +378,18 @@ audio.addEventListener('error', () => {
   if (tried.urls && tried.n < tried.urls.length) {
     audio.src = tried.urls[tried.n]; audio.play().catch(()=>{});
   } else {
-    setStatus('Yayın açılamadı');
+    setStatus("Couldn't open stream");
   }
 });
-audio.addEventListener('playing', () => { setStatus('Canlı'); syncToggle(); });
-audio.addEventListener('waiting', () => setStatus('Tamponlanıyor…'));
-audio.addEventListener('pause', () => { setStatus('Duraklatıldı'); syncToggle(); });
+audio.addEventListener('playing', () => { setStatus('Live'); syncToggle(); });
+audio.addEventListener('waiting', () => setStatus('Buffering…'));
+audio.addEventListener('pause', () => { setStatus('Paused'); syncToggle(); });
 audio.addEventListener('play', syncToggle);
 
 function toggle(){
   if (current < 0) return play(0);
   if (audio.paused) {
-    // Canlı yayında duraklatma sonrası güncel akışa dönmek için yeniden bağla
+    // After pausing a live stream, reconnect to get the current broadcast
     play(current);
   } else {
     audio.pause();
@@ -182,11 +397,17 @@ function toggle(){
 }
 function step(d){ if (!stations.length) return; play((current + d + stations.length) % stations.length); }
 
-function updateMediaSession(s){
-  if (!('mediaSession' in navigator)) return;
+function updateMediaSession(){
+  if (!('mediaSession' in navigator) || current < 0) return;
+  const s = stations[current], m = nowMeta;
+  const artwork = (m && m.art)
+    ? [{ src: m.art, sizes: '512x512' }]
+    : [{ src:'icon-192.png', sizes:'192x192', type:'image/png' }, { src:'icon-512.png', sizes:'512x512', type:'image/png' }];
   navigator.mediaSession.metadata = new MediaMetadata({
-    title: s.name, artist: s.genre, album: 'Radyo',
-    artwork: [{ src:'icon-192.png', sizes:'192x192', type:'image/png' }, { src:'icon-512.png', sizes:'512x512', type:'image/png' }]
+    title: m ? m.title : s.name,
+    artist: m ? m.artist : s.genre,
+    album: m ? (m.album || s.name) : 'Radio',
+    artwork
   });
   navigator.mediaSession.setActionHandler('play', toggle);
   navigator.mediaSession.setActionHandler('pause', () => audio.pause());
@@ -194,6 +415,7 @@ function updateMediaSession(s){
   navigator.mediaSession.setActionHandler('nexttrack', () => step(1));
 }
 
+/* ---------- Shortcut links ---------- */
 function toast(t){
   const el = $('toast'); el.textContent = t; el.classList.add('show');
   clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('show'), 2200);
@@ -203,8 +425,8 @@ function stationLink(i){
 }
 async function copyLink(i){
   const url = stationLink(i);
-  try { await navigator.clipboard.writeText(url); toast('Kısayol adresi kopyalandı'); }
-  catch(e){ window.prompt('Kısayol adresi:', url); }
+  try { await navigator.clipboard.writeText(url); toast('Shortcut link copied'); }
+  catch(e){ window.prompt('Shortcut link:', url); }
 }
 
 $('list').addEventListener('click', e => {
@@ -219,13 +441,26 @@ $('chips').addEventListener('click', e => {
   filter = b.dataset.g; render();
 });
 $('toggle').addEventListener('click', toggle);
+$('sToggle').addEventListener('click', toggle);
 $('prev').addEventListener('click', () => step(-1));
+$('sPrev').addEventListener('click', () => step(-1));
 $('next').addEventListener('click', () => step(1));
+$('sNext').addEventListener('click', () => step(1));
 $('vol').addEventListener('input', e => audio.volume = e.target.value);
+$('openSheet').addEventListener('click', openSheet);
+$('closeSheet').addEventListener('click', closeSheet);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+// Swipe down on the full-screen player to close it
+let touchY = null;
+$('sheet').addEventListener('touchstart', e => { touchY = e.touches[0].clientY; }, { passive:true });
+$('sheet').addEventListener('touchend', e => {
+  if (touchY !== null && e.changedTouches[0].clientY - touchY > 90) closeSheet();
+  touchY = null;
+}, { passive:true });
 
 async function load(){
   stations = EMBEDDED;
-  // Sunucudan açıldıysa radio-mixes.json güncel listeyi getirir
+  // When served from a web server, radio-mixes.json provides the up-to-date list
   if (location.protocol.startsWith('http')) {
     try {
       const r = await fetch('radio-mixes.json', { cache:'no-cache' });
@@ -237,7 +472,7 @@ async function load(){
   initialStation();
 }
 
-// Açılışta: ?station=ad veya ?station=2 (sıra no) varsa onu başlat; yoksa son çalınanı hazır tut.
+// On launch: ?station=name or ?station=2 (position) starts that station; otherwise the last played one is kept ready.
 function findStation(q){
   if (!q) return -1;
   const n = q.trim().toLowerCase();
@@ -256,8 +491,8 @@ function initialStation(){
   if (i >= 0) {
     current = i;
     $('bar').classList.add('show');
-    $('nowName').textContent = stations[i].name;
-    setStatus('Devam etmek için ▶ dokun');
+    status = 'Tap ▶ to resume';
+    renderNow();
     render();
   }
 }
